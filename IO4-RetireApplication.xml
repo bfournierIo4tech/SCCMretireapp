@@ -1,0 +1,25 @@
+<ActionDescription Class="Group" GroupAsRegion="true" DisplayName="IO4 Technologies" MnemonicDisplayName="IO4 Technologies" Description="IO4 Technologies custom Actions">
+	<ShowOn>
+		<string>DefaultHomeTab</string>
+		<string>ContextMenu</string>  
+	</ShowOn>
+	<ActionGroups>
+		<ActionDescription Class="Executable" DisplayName="Retire Application" MnemonicDisplayName="Retire Application" Description = "List all Collections" RibbonDisplayType="TextAndSmallImage">
+			<ShowOn>
+				<string>DefaultHomeTab</string> <!-- RIBBON -->
+				<string>ContextMenu</string> <!-- Context Menu -->
+			</ShowOn>
+			<ImagesDescription>
+				<ResourceAssembly>
+					<Assembly>AdminUI.UIResources.dll</Assembly>
+					<Type>Microsoft.ConfigurationManagement.AdminConsole.UIResources.Properties.Resources.resources</Type>
+				</ResourceAssembly>
+				<ImageResourceName>Retire</ImageResourceName>
+			</ImagesDescription>
+			<Executable>
+				<FilePath>PowerShell.exe</FilePath>
+				<Parameters>-ExecutionPolicy bypass -File C:\SOURCES\Scripts\RetireApplication.ps1 "##SUB:__Server##" "##SUB:__Namespace##" "##SUB:ModelName##"</Parameters>
+			</Executable>
+		</ActionDescription>
+	</ActionGroups>
+</ActionDescription>
