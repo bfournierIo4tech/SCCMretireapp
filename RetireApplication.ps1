@@ -118,7 +118,7 @@ try
 			    New-PSDrive -Name source -PSProvider FileSystem -Root $AppLocation[$i] | Out-Null
 			    New-PSDrive -Name target -PSProvider FileSystem -Root $newPath | Out-Null
 			    Write-host "Copying files $($AppLocation[$i]) to $newPath"
-                Copy-Item -Path source:\*.* -Destination target: -recurse
+			    Copy-Item -Path source:\*.* -Destination target: -recurse
                 
 			    Remove-PSDrive source
 			    Remove-PSDrive target
@@ -151,7 +151,7 @@ try
     write-host "Update Application Properties"
     $UpdatedXML = [Microsoft.ConfigurationManagement.ApplicationManagement.Serialization.SccmSerializer]::SerializeToString($ApplicationXML, $true)
 	$App.SDMPackageXML = $UpdatedXML
-	#$App.Put()
+	$App.Put()
 	}
 
 
@@ -182,7 +182,7 @@ try
             $DPName = (Get-CMDistributionPointInfo | ? { $_.NALPath -eq $DPinfo.ServerNALPath}).Name
             Write-host "Removing ""$NewName"" package content from distribution point:"$DPName
 
-            #Remove-CMContentDistribution -ApplicationName "$NewName" -DistributionPointName "$DPName" -Force 
+            Remove-CMContentDistribution -ApplicationName "$NewName" -DistributionPointName "$DPName" -Force 
         }
     }
 
