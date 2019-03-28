@@ -11,6 +11,7 @@
 # Updates:
 #        0.1 - Raphael Perez - 16/01/2014 - Initial Script
 #        1.0 - io4Master- 22-03-2019 - Modifications
+#        1.1 - io4Master- 27-03-2019 - Modifications AD Group/ delete collection
 #
 # Usage:
 #	 Option 1: powershell.exe -ExecutionPolicy Bypass .\RetireApplication.ps1 [Parameters]
@@ -39,6 +40,10 @@ $NewRootPath = "\\$CMserver\packages$\__Retired"
 $localcachelocation = "C:\ProgramData\$ClientName\Sources\_Uninstall"
 $localPKGExe = "Uninstall.exe"
 $Dummyfolder = "\\$SRCServer\packages$\_UninstallOnly"
+
+#$ADSearchPath : If you want to restain script to search specific OU 
+$ADSearchPath = "OU=Applications,OU=SCCM_Workstations,OU=Global Groups,OU=Groups,DC=corp,DC=contoso,DC=com"
+$ADRetiredPath = "OU=Retired,OU=Applications,OU=SCCM_Workstations,OU=Global Groups,OU=Groups,DC=corp,DC=contoso,DC=com"
 
 
 try
@@ -165,6 +170,50 @@ try
 		Remove-CMDeployment -DeploymentId $Deployment.DeploymentID -ApplicationName $NewName -Force
 	}
 
+	##Get all Collections
+    Write-host "Querying Deployment Collections information"
+    $CollectionsToDelete =  $DeploymentList.CollectionName | ? {$_ -like $($NewName)+"_Computer*"}
+
+	foreach ($Collection in $CollectionsToDelete)
+	{
+		Write-host "Removing Collection $($Collection)"
+		Remove-CMCollection -Name "$Collection" -Force
+	}
+
+    ## Moving or removing AD Group
+    #Check Rule Name
+    Write-host "Querying AD Group Deployment information"
+    $ADGroupName = (Get-CMDeviceCollectionQueryMembershipRule -CollectionName ($CollectionToDelete | ? {$_ -eq $($NewName)+"_Computer"})).RuleName
+    if ($ADGroupName.Count -eq 0 -OR $ADGroupName -notlike '_SCCM_Computer_*')
+    {
+        #Check Description  for group ID
+        [string]$ADGroupName="_SCCM_Computer_"+(($App.LocalizedDescription.Split(":")) | select -Last 1)
+
+    }
+
+    if ($ADGroupName.Count -eq 1)
+    {
+        Write-host "Foud AD Group" $ADGroupName
+        $ADGroupObj = get-ADgroup -Filter "samaccountname -eq '$GroupName'" -SearchBase $ADSearchPath
+        $ADGroupMembers = Get-ADGroupMember -Identity $ADGroupObj
+        if ($ADGroupMembers.count -gt 0){
+            #Move Group
+            $TmpString ="AD Group: """+$GroupName+""" contain member ... moving to retired folder"
+            write-host $TmpString
+            Move-ADObject -Identity $ADGroupObj -TargetPath $ADRetiredPath 
+
+        }
+        else
+        {
+            #Delete group
+            $TmpString= "AD Group: """+$GroupName+""" contain no member ... removing group"
+            write-host $TmpString
+            Remove-AdGroup -Identity $ADGroupObj -Confirm 
+        } 
+    }
+    else { Write-host "No AD  Group Found" }
+
+
 	##Remove Content From Distribution Point
     Write-host "Retreving Distribution Point for application $NewName"
         
@@ -202,4 +251,4 @@ finally
 { 
 	Write-Host "Complete. Press any key to continue ..."
 	$x = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-} 
+}  
