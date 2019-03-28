@@ -1,12 +1,7 @@
 <#
 #=======================================================================================
 # Name: RetireApplication.ps1
-# Version: 0.1
-# Author: Raphael Perez - raphael@rflsystems.co.uk
-# Date: 16/01/2014
 # Comment: This script will retire a selected application
-#
-# Test: This script was tested on a Windows Server 2012 R2 running CM12R2 Primary site
 #
 # Updates:
 #        0.1 - Raphael Perez - 16/01/2014 - Initial Script
@@ -252,3 +247,4 @@ finally
 	Write-Host "Complete. Press any key to continue ..."
 	$x = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 }  
+  
