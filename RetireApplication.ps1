@@ -74,7 +74,8 @@ try
 
     #Deserialize SDMPackageXML
     $ApplicationXML = [Microsoft.ConfigurationManagement.ApplicationManagement.Serialization.SccmSerializer]::DeserializeFromString($App.SDMPackageXML, $true)
-
+    $OriginalXML = $ApplicationXML #To compare for put()
+    
     ##Retiring App
 	Write-host "Retiring application in SCCM Console"
 	$App.SetIsExpired($true) | out-null
@@ -148,11 +149,18 @@ try
                 }
 			
         }
-    write-host "Update Application Properties"
-    $UpdatedXML = [Microsoft.ConfigurationManagement.ApplicationManagement.Serialization.SccmSerializer]::SerializeToString($ApplicationXML, $true)
-	$App.SDMPackageXML = $UpdatedXML
-	$App.Put()
-	}
+        if ($OriginalXML -ne $ApplicationXML)
+        {
+            write-host "Update Application Properties"
+            $UpdatedXML = [Microsoft.ConfigurationManagement.ApplicationManagement.Serialization.SccmSerializer]::SerializeToString($ApplicationXML, $true)
+	        $App.SDMPackageXML = $UpdatedXML
+	        $App.Put()
+        }
+        else
+        {
+	        write-host "No need to update Application Properties" -ForegroundColor Yellow
+        }
+}
 
 
 	##Get all Deployments
